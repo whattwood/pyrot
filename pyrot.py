@@ -21,11 +21,11 @@ relay_ccw_on=[settings.relay_ccw,settings.relay_on]
 relay_ccw_off=[settings.relay_ccw,settings.relay_off]
 
 def valueChanged(value):
-        value=e1.getValue()
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("GPIO Clk Pin:",settings.enc_clk,", GPIO Bk Pin:",settings.enc_bk)
-        print("Encoder Value:",value)
-        print("Press Control-C to exit")
+    value=e1.getValue()
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("GPIO Clk Pin:",settings.enc_clk,", GPIO Bk Pin:",settings.enc_bk)
+    print("Encoder Value:",value)
+    print("Press Control-C to exit")
 
 e1 = Encoder(settings.enc_clk, settings.enc_bk, callback=valueChanged) # Run valueChanged when encoder moves
 
@@ -38,18 +38,18 @@ pi.i2c_write_device(relay_bus,relay_cw_off)
 pi.i2c_write_device(relay_bus,relay_ccw_off)
 
 try:
-        while value < 5 and value > -5:
-                value=e1.getValue()
-                if value == settings.heading:
-                        pi.i2c_write_device(relay_bus,relay_cw_off)
-                        pi.i2c_write_device(relay_bus,relay_ccw_off)
-                if value > settings.heading:
-                        pi.i2c_write_device(relay_bus,relay_cw_on)
-                        pi.i2c_write_device(relay_bus,relay_ccw_off)
-                if value < settings.heading:
-                        pi.i2c_write_device(relay_bus,relay_ccw_on)
-                        pi.i2c_write_device(relay_bus,relay_cw_off)
-                time.sleep(1)
+    while value < 5 and value > -5:
+            value=e1.getValue()
+            if value == settings.heading:
+                    pi.i2c_write_device(relay_bus,relay_cw_off)
+                    pi.i2c_write_device(relay_bus,relay_ccw_off)
+            if value > settings.heading:
+                    pi.i2c_write_device(relay_bus,relay_cw_on)
+                    pi.i2c_write_device(relay_bus,relay_ccw_off)
+            if value < settings.heading:
+                    pi.i2c_write_device(relay_bus,relay_ccw_on)
+                    pi.i2c_write_device(relay_bus,relay_cw_off)
+            time.sleep(1)
 except KeyboardInterrupt:
     pass
 
