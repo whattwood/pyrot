@@ -6,7 +6,7 @@ pi = pigpio.pi()
 
 import time
 
-import sys, select, os
+import io, sys, select, os
 os.system('cls' if os.name == 'nt' else 'clear')
 os.system("screen -S pyrot1 -dm socat -u -u pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 os.system("screen -S pyrot2 -dm rotctld -m 202 -r /dev/ttyS21") #start hamlib on a detached screen
