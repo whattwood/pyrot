@@ -67,3 +67,4 @@ class Encoder:
 
     def getValue(self):
         return self.value
+#unused
