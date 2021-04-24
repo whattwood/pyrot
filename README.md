@@ -2,6 +2,7 @@
 Python antenna rotator controller for Raspberry Pi
 
 Requirements:
+- designed for Python 3
 - hamlib must be installed
 - pigpio must be installed
 - requires 2 x i2c relays
