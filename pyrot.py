@@ -20,7 +20,7 @@ relay_ccw_off=[settings.relay_ccw,settings.relay_off]
 
 os.system('clear') #clear screen
 os.system("screen -S pyrot1 -dm socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
-os.system("screen -S pyrot2 -dm rotctld -m 202 -r /dev/ttyS21") #start hamlib on a detached screen
+os.system("screen -S pyrot2 -dm rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
 
 class bcolors:
     DEFAULT = '\x1b[0m'
@@ -84,16 +84,20 @@ print("GPIO Clk Pin:",settings.enc_clk)
 print("Press Control-C to exit")
 pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
-ser = serial.Serial('/dev/ttyS22', 115200, timeout = 1) #connect to serial port piped to rotctld
+ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because it stalls the whole script
 readOut = 0
 count = 0
-azBegin = 270.0
+azBegin = 0.0
 azMotion = "stopped"
 azLastMotion = azMotion
 azActual = azBegin
 elActual = 0.0
 azDesired = azActual
 elDesired = elActual
+azStable = azActual
+azStableCount = 0
+os.system('mkdir /var/spool/pyrot')
+os.system('touch /var/spool/pyrot/pyrot_position.txt')
 azelReply = "AZ" + str(azActual) + " EL" + str(elActual) # String for replies to position inquiries from hamlib
 commandedBearing = [azActual, elActual]
 
@@ -102,8 +106,9 @@ try:
     while True:
         while True:
             count += 1
+            #print("reading serial...")
             readOut = ser.readline().decode('ascii') #read serial port for any updated commands
-            #print ("AZ=",azActual,",desire:",azDesired," EL=",elActual,",desire:",elDesired," Command from Hamlib: ", readOut)
+            #print("Finished reading serial port.")
             if "AZ EL" in readOut: #if position is requested by hamlib
                 ser.write(str(azelReply).encode('ascii')) #reply with position
             elif "AZ" in readOut: #if position command is received
@@ -122,27 +127,39 @@ try:
             if commandedBearing[1] != None:
                 elDesired = (commandedBearing[1])
                 elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
-            if azDesired < azActual - 2:
+            if azDesired < azActual - 1: #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_ccw_on)
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 azMotion = "ccw"
-            elif azDesired > azActual + 2:
+            elif azDesired > azActual + 1: #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_cw_on)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
                 azMotion = "cw"
-            else:
+            elif azMotion != "stopped":
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
+                azMotion = "stopped"
             readOut = ""
             azelReply = "AZ" + str(azActual) + " EL" + str(elActual)
-            if (count/5).is_integer() is True:
+            if (count/50).is_integer() is True:
+                os.system('clear') #clear screen
                 print (bcolors.YELLOW + "AZ=",azActual,",desire:",azDesired," EL=",elActual,",desire:",elDesired, " " + bcolors.ENDC)
-            if (count/6).is_integer() is True:
-                print (bcolors.OKGREEN + "Saving AZ/EL positions to file " + bcolors.ENDC)
-            if count > 100:
+            if (count/10).is_integer() is True:
+                if azStable != azActual:
+                    azStable = azActual
+                    azStableCount = 0
+                else:
+                    azStableCount +=1
+                if azStableCount == 10:
+                    file='/var/spool/pyrot/pyrot_position.txt'
+                    fileString = (str(azActual) + ", " + str(elActual))
+                    with open(file, 'w') as filetowrite:
+                        filetowrite.write(fileString)
+                        azStableCount = 0
+                    print (bcolors.OKGREEN + "Saving AZ/EL positions to file " + bcolors.ENDC)
+            if count > 1000: #at approx 100 seconds, reset count
                 count = 0
-
-            time.sleep(.01)
+            time.sleep(.01) #slow script down just in case it runs away
             break
         ser.flush() #flush the serial buffer
         time.sleep(.01)
