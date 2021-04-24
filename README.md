@@ -11,6 +11,7 @@ Requirements:
 2021.04.24 Update
 - Now takes commands from rotctl and responds with feedback
 - Still requires a way to store known position in a file in case script stops
+- Still requires wiring diagram
 
 2021.04.22 Initial version
 Still To Do:
