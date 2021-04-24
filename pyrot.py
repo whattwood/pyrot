@@ -3,8 +3,11 @@
 
 # imports and startup software
 import time, sys, select, os, serial #load the python modules we'll be using
-os.system("pigpiod") #start pigpio daemon if it hasn't already
 
+try:
+    os.system("pigpiod") #start pigpio daemon if it hasn't already
+except:
+    pass
 import pigpio
 pi = pigpio.pi() #define which Raspberry Pi the pigpio daemon will control - the local one of course!
 
@@ -85,19 +88,37 @@ print("Press Control-C to exit")
 pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
 ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because it stalls the whole script
-readOut = 0
+
+try:
+    filename="/var/spool/pyrot/pyrot_position.txt"
+    with open(filename, 'r') as f:
+        readOut = f.read()    # results in a str object
+    newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
+    savedPosition = [float(i) for i in newstr.split()] #save numbers in savedPosition object
+    if savedPosition != "":
+        if savedPosition[0] != None:
+            azActual = (savedPosition[0])
+        if savedPosition[1] != None:
+            elActual = (savedPosition[1])
+except:
+    print("readOut value:", readout)
+    print(bcolors.FAIL + "ERROR reading previous position! Setting values to 0 - check rotator position NOW!!!" + bcolors.ENDC)
+    azActual = 0.0
+    elActual = 0.0
+    time.sleep(60)
+
 count = 0
-azBegin = 0.0
 azMotion = "stopped"
 azLastMotion = azMotion
-azActual = azBegin
-elActual = 0.0
 azDesired = azActual
 elDesired = elActual
 azStable = azActual
 azStableCount = 0
-os.system('mkdir /var/spool/pyrot')
-os.system('touch /var/spool/pyrot/pyrot_position.txt')
+#try:
+#    os.system('mkdir /var/spool/pyrot')
+#    os.system('touch /var/spool/pyrot/pyrot_position.txt')
+#except:
+#    pass
 azelReply = "AZ" + str(azActual) + " EL" + str(elActual) # String for replies to position inquiries from hamlib
 commandedBearing = [azActual, elActual]
 
@@ -143,19 +164,18 @@ try:
             azelReply = "AZ" + str(azActual) + " EL" + str(elActual)
             if (count/50).is_integer() is True:
                 os.system('clear') #clear screen
-                print (bcolors.YELLOW + "AZ=",azActual,",desire:",azDesired," EL=",elActual,",desire:",elDesired, " " + bcolors.ENDC)
+                print (bcolors.YELLOW + "AZ=",azActual,", desire:",azDesired," EL=",elActual,", desire:",elDesired, " " + bcolors.ENDC)
             if (count/10).is_integer() is True:
                 if azStable != azActual:
                     azStable = azActual
                     azStableCount = 0
-                else:
+                elif azStableCount < 12:
                     azStableCount +=1
                 if azStableCount == 10:
-                    file='/var/spool/pyrot/pyrot_position.txt'
-                    fileString = (str(azActual) + ", " + str(elActual))
-                    with open(file, 'w') as filetowrite:
+                    filename='/var/spool/pyrot/pyrot_position.txt'
+                    fileString = (str(azActual) + ", " + str(elActual) + "\n")
+                    with open(filename, 'w') as filetowrite:
                         filetowrite.write(fileString)
-                        azStableCount = 0
                     print (bcolors.OKGREEN + "Saving AZ/EL positions to file " + bcolors.ENDC)
             if count > 1000: #at approx 100 seconds, reset count
                 count = 0
@@ -168,9 +188,15 @@ except KeyboardInterrupt:
 
 # Script shutdown commands
 print("\r\nFinal Azimuth Value:",azActual)
+print("\r\nFinal Elevation Value:",elActual)
 os.system("screen -S pyrot1 -X quit")
 os.system("screen -S pyrot2 -X quit")
 pi.i2c_write_device(relay_bus,relay_cw_off)
 pi.i2c_write_device(relay_bus,relay_ccw_off)
 pi.i2c_close(relay_bus)
 print(bcolors.DEFAULT + "Cleaned up running processes")
+filename='/var/spool/pyrot/pyrot_position.txt'
+fileString = (str(azActual) + ", " + str(elActual) + "\n")
+with open(filename, 'w') as filetowrite:
+    filetowrite.write(fileString)
+print (bcolors.OKGREEN + "Saved final AZ/EL positions to file " + bcolors.ENDC)
