@@ -9,6 +9,7 @@ Requirements:
 - reads single pulse 1 degree rotary encoder only (so far...)
 
 2021.04.24 Update
+- ISSUE: need some debounce, not counting GPIO pin clicks correctly
 - Now takes commands from rotctl and responds with feedback
 - Still requires a way to store known position in a file in case script stops
 - Still requires wiring diagram
