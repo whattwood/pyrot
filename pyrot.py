@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # Pi Rotator controller software by VE6WK 2021 intended for DC rotator with pulse sensor such as Alpha Spid
 
-# imports and startup software
-import time, sys, select, os, serial #load the python modules we'll be using
+import time, sys, select, os, serial #load the python modules we'll be using #imports and startup software
 
 try:
     os.system("pigpiod") #start pigpio daemon if it hasn't already
@@ -25,7 +24,7 @@ os.system('clear') #clear screen
 os.system("screen -S pyrot1 -dm socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 os.system("screen -S pyrot2 -dm rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
 
-class bcolors:
+class bcolors: #setup colours to be used while printing text to screen
     DEFAULT = '\x1b[0m'
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -37,34 +36,29 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-class Encoder:
+class Encoder: #detect and report state changes to rotator position sensor
 
-    def __init__(self, leftPin, callback=None):
-        self.leftPin = leftPin
+    def __init__(self, azPin, callback=None):
+        self.azPin = azPin
         self.callback = callback
         self.value = 0
-        GPIO.setup(self.leftPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(self.leftPin, GPIO.BOTH, callback=self.transitionOccurred)
+        GPIO.setup(self.azPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.add_event_detect(self.azPin, GPIO.BOTH, callback=self.transitionOccurred)
 
     def transitionOccurred(self, channel):
-        newState = GPIO.input(self.leftPin)
+        newState = GPIO.input(self.azPin)
 
         if newState != self.value: #only do this if state has changed (debounce)
             self.value = newState
-            #print("New Self.value: ",self.value)
             if self.callback is not None:
                 self.callback(self.value)
 
     def getValue(self):
         return self.value
 
-# This happens when encoder moves
-def valueChanged(encoderValue):
+def valueChanged(encoderValue): # This happens when encoder moves
     global azMotion, azActual, azLastmotion
     encoderValue=encoderResult.getValue()
-    #os.system('clear')
-    #print("Encoder New Value:",encoderValue)
-    #print("Press Control-C to exit")
     if azMotion == "cw" and encoderValue == 1:
         azActual += 1 #if encoder pin reads 1 and direction is cw, 1 degree is added to azimuth value.
     elif azMotion == "ccw" and encoderValue == 1:
@@ -87,7 +81,7 @@ print("GPIO Clk Pin:",settings.enc_clk)
 print("Press Control-C to exit")
 pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
-ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because it stalls the whole script
+ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
 
 try:
     filename="/var/spool/pyrot/pyrot_position.txt"
@@ -114,11 +108,6 @@ azDesired = azActual
 elDesired = elActual
 azStable = azActual
 azStableCount = 0
-#try:
-#    os.system('mkdir /var/spool/pyrot')
-#    os.system('touch /var/spool/pyrot/pyrot_position.txt')
-#except:
-#    pass
 azelReply = "AZ" + str(azActual) + " EL" + str(elActual) # String for replies to position inquiries from hamlib
 commandedBearing = [azActual, elActual]
 
@@ -127,9 +116,7 @@ try:
     while True:
         while True:
             count += 1
-            #print("reading serial...")
             readOut = ser.readline().decode('ascii') #read serial port for any updated commands
-            #print("Finished reading serial port.")
             if "AZ EL" in readOut: #if position is requested by hamlib
                 ser.write(str(azelReply).encode('ascii')) #reply with position
             elif "AZ" in readOut: #if position command is received
@@ -159,13 +146,14 @@ try:
             elif azMotion != "stopped":
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
+                azLastMotion = azMotion
                 azMotion = "stopped"
             readOut = ""
             azelReply = "AZ" + str(azActual) + " EL" + str(elActual)
-            if (count/50).is_integer() is True:
+            if (count/50).is_integer() is True: #every 5 secods or so
                 os.system('clear') #clear screen
                 print (bcolors.YELLOW + "AZ=",azActual,", desire:",azDesired," EL=",elActual,", desire:",elDesired, " " + bcolors.ENDC)
-            if (count/10).is_integer() is True:
+            if (count/10).is_integer() is True: #this portion of code saves the rotator position to a file once it's been stopped for 10 seconds or so
                 if azStable != azActual:
                     azStable = azActual
                     azStableCount = 0
