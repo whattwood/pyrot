@@ -1,12 +1,30 @@
 # pyrot
 Python antenna rotator controller for Raspberry Pi
 
+Files:
+setting.py #Settings for the script, modify to match your hardware
+pyrot.py #Rotator control script, this is the one you run
+easycom.txt #Reference for easycom commands, not required
+encoder.py #Not used, function for reading rotary encoder. May be implemented in the future
+
 Requirements:
 - designed for Python 3
 - hamlib must be installed
 - pigpio must be installed
 - requires 2 x i2c relays
 - reads single pulse 1 degree rotary encoder only (so far...)
+
+Current Functionality
+- Tested with AlphaSpid RAK rotator
+- Azimuth control only
+- Set up for hamlib, but could easily be modified to accept Easycom commands on Raspberry Pi serial port by changin socat line
+
+Installation Instructions
+1. cd /usr/src
+2. git 
+
+-------------------------------------------------------------------
+CHANGELOG
 
 2021.04.25 Update
 - fixed sensor bounce
