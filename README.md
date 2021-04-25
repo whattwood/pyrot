@@ -35,19 +35,19 @@
 -------------------------------------------------------------------
 ## CHANGELOG
 
-2021.04.25 Update
+### 2021.04.25 Update
 - fixed sensor bounce
 - store position in file when rotator is stopped for 10 seconds and on script shutdown
 - Still requires wiring diagram
 - should clean up code to prevent error messages when pigpiod is already running and when rotator position file already exisits
 
-2021.04.24 Update
+### 2021.04.24 Update
 - ISSUE: need some debounce, not counting GPIO pin clicks correctly
 - Now takes commands from rotctl and responds with feedback
 - Still requires a way to store known position in a file in case script stops
 - Still requires wiring diagram
 
-2021.04.22 Initial version
+### 2021.04.22 Initial version
 Still To Do:
 - Write module that takes commands and responds to rotctld requests
 - Add pre-requesites to documentation
