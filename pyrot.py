@@ -3,10 +3,16 @@
 
 import time, sys, select, os, serial #load the python modules we'll be using #imports and startup software
 
-try:
+import os.path
+from os import path #used for checking whether files exist
+
+tmp = os.popen("ps -Af").read() #detect if pigpiod is already running
+processCount = tmp.count('pigpiod')
+if processCount > 0:
+    print("pigpiod already running...")
+else:
     os.system("pigpiod") #start pigpio daemon if it hasn't already
-except:
-    pass
+
 import pigpio
 pi = pigpio.pi() #define which Raspberry Pi the pigpio daemon will control - the local one of course!
 
@@ -20,7 +26,7 @@ relay_cw_off=[settings.relay_cw,settings.relay_off]
 relay_ccw_on=[settings.relay_ccw,settings.relay_on]
 relay_ccw_off=[settings.relay_ccw,settings.relay_off]
 
-os.system('clear') #clear screen
+os.system("clear") #clear screen
 os.system("screen -S pyrot1 -dm socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 os.system("screen -S pyrot2 -dm rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
 
@@ -83,20 +89,30 @@ pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
 ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
 
-try:
+print ("Does /var/spool/pyrot/pyrot_position.txt exist? " + str(path.isfile("/var/spool/pyrot/pyrot_position.txt")))
+if path.isfile("/var/spool/pyrot/pyrot_position.txt") is True:
     filename="/var/spool/pyrot/pyrot_position.txt"
     with open(filename, 'r') as f:
         readOut = f.read()    # results in a str object
     newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
     savedPosition = [float(i) for i in newstr.split()] #save numbers in savedPosition object
-    if savedPosition != "":
+    try:
         if savedPosition[0] != None:
             azActual = (savedPosition[0])
+    except:
+        print(bcolors.FAIL + "/var/spool/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
+        exit()
+    try:
         if savedPosition[1] != None:
             elActual = (savedPosition[1])
-except:
-    print("readOut value:", readout)
-    print(bcolors.FAIL + "ERROR reading previous position! Setting values to 0 - check rotator position NOW!!!" + bcolors.ENDC)
+    except:
+        print(bcolors.FAIL + "/var/spool/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
+        exit()
+else:
+    print(bcolors.FAIL + "Previous position file does not exist, setting values to 0 degrees! Ensure rotator position is North or press Control-C NOW!!!" + bcolors.ENDC)
+    print("Waiting 60 seconds for input...")
+    os.system("mkdir /var/spool/pyrot/")
+    os.system("touch /var/spool/pyrot/pyrot_position.txt")
     azActual = 0.0
     elActual = 0.0
     time.sleep(60)
