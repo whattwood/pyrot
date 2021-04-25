@@ -166,6 +166,7 @@ try:
         while True:
             count += 1
             readOut = ser.readline().decode('ascii') #read serial port for any updated commands
+
             if "AZ EL" in readOut: #if position is requested by hamlib
                 ser.write(str(azelReply).encode('ascii')) #reply with position
             elif "AZ" in readOut: #if position command is received
@@ -184,21 +185,30 @@ try:
             if commandedBearing[1] != None:
                 elDesired = (commandedBearing[1])
                 elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
-            if azDesired < azActual - 1: #if the desired position is different than the actual position by more than 1 degree
+
+            if azDesired < azActual - 1 and azMotion != "ccw": #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_ccw_on)
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 azMotion = "ccw"
-            elif azDesired > azActual + 1: #if the desired position is different than the actual position by more than 1 degree
+                azStableCount = 0
+            elif azDesired < azActual - 1 and azMotion == "ccw":
+                pass
+            elif azDesired > azActual + 1 and azMotion != "cw": #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_cw_on)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
                 azMotion = "cw"
+                azStableCount = 0
+            elif azDesired > azActual - 1 and azMotion == "cw":
+                pass
             elif azMotion != "stopped":
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
                 azLastMotion = azMotion
                 azMotion = "stopped"
+
             readOut = ""
             azelReply = "AZ" + str(azActual) + " EL" + str(elActual)
+
             if (count/50).is_integer() is True: #every 5 secods or so
                 os.system('clear') #clear screen
                 print (bcolors.YELLOW + "AZ=",azActual,", desire:",azDesired," EL=",elActual,", desire:",elDesired, " " + bcolors.ENDC)
@@ -208,6 +218,11 @@ try:
                     azStableCount = 0
                 elif azStableCount < 12:
                     azStableCount +=1
+                if azMotion != "stopped" and azStableCount > 2: #if no motion detected for 3 cycles while rotator should be moving
+                    print(bcolors.FAIL + "ERROR! No motion detected while rotator should be turning! Shutting script down." + bcolors.ENDC)
+                    with open(filenameLog, 'a') as f:
+                        f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "ERROR! No motion detected while rotator should be turning! Shutting script down.\n")
+                    pyrotShutdown() #shut script down
                 if azStableCount == 10:
                     filename='/var/spool/pyrot/pyrot_position.txt'
                     fileString = (str(azActual) + ", " + str(elActual) + "\n")
@@ -218,8 +233,10 @@ try:
                 count = 0
             time.sleep(.01) #slow script down just in case it runs away
             break
+
         ser.flush() #flush the serial buffer
         time.sleep(.01)
+
 except KeyboardInterrupt:
     pass
 
