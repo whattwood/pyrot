@@ -110,12 +110,12 @@ if path.isfile("/var/spool/pyrot/pyrot_position.txt") is True:
         exit()
 else:
     print(bcolors.FAIL + "Previous position file does not exist, setting values to 0 degrees! Ensure rotator position is North or press Control-C NOW!!!" + bcolors.ENDC)
-    print("Waiting 60 seconds for input...")
+    print("Waiting 20 seconds for input...")
     os.system("mkdir /var/spool/pyrot/")
     os.system("touch /var/spool/pyrot/pyrot_position.txt")
     azActual = 0.0
     elActual = 0.0
-    time.sleep(60)
+    time.sleep(20)
 
 count = 0
 azMotion = "stopped"
