@@ -1,30 +1,39 @@
 # pyrot
-Python antenna rotator controller for Raspberry Pi
+## Python antenna rotator controller for Raspberry Pi
 
-Files:
+### Files:
 setting.py #Settings for the script, modify to match your hardware
 pyrot.py #Rotator control script, this is the one you run
 easycom.txt #Reference for easycom commands, not required
 encoder.py #Not used, function for reading rotary encoder. May be implemented in the future
 
-Requirements:
+### Requirements:
 - designed for Python 3
 - hamlib must be installed
 - pigpio must be installed
 - requires 2 x i2c relays
 - reads single pulse 1 degree rotary encoder only (so far...)
 
-Current Functionality
+### Current Functionality
 - Tested with AlphaSpid RAK rotator
 - Azimuth control only
 - Set up for hamlib, but could easily be modified to accept Easycom commands on Raspberry Pi serial port by changin socat line
 
-Installation Instructions
-1. cd /usr/src
-2. git 
+## Installation Instructions
+
+1. ```cd /usr/src```
+2. ```git clone https://github.com/whattwood/pyrot.git```
+3. ```cd /pyrot```
+4. ```nano setting.py``` Change settings to match your hardware, save with Control-x
+5. ```python -V``` Ensure python version is at least 3
+6. ```python pyrot.py``` Run pyrot script to ensure it works
+7. ```chmod +x pyrot.py``` Make pyrot executable
+8. Add /usr/src/pyrot/pyrot.py to startup using /etc/rc.local or cron job
+
+
 
 -------------------------------------------------------------------
-CHANGELOG
+## CHANGELOG
 
 2021.04.25 Update
 - fixed sensor bounce
@@ -40,6 +49,6 @@ CHANGELOG
 
 2021.04.22 Initial version
 Still To Do:
-1. Write module that takes commands and responds to rotctld requests
-2. Add pre-requesites to documentation
-3. Draw wiring diagram for Alpha Spid rotator
+- Write module that takes commands and responds to rotctld requests
+- Add pre-requesites to documentation
+- Draw wiring diagram for Alpha Spid rotator
