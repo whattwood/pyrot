@@ -6,7 +6,9 @@
 - ```pyrot.py``` Rotator control script, this is the one you run
 - ```easycom.txt``` Not used, reference for easycom commands only
 - ```encoder.py``` Not used, function for reading rotary encoder; may be implemented in the future
-
+- ```/var/spool/pyrot/pyrot_position.txt``` Saved position file so pyrot starts up with known rotator position
+- ```/var/spool/pyrot/pyrot_log.txt``` Log file for script errors etc.
+- 
 ### Requirements:
 - designed for Python 3
 - hamlib must be installed
