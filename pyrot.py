@@ -180,6 +180,8 @@ try:
                 azMotion = "stopped"
             elif readOut != "":
                 print ("UNKNOWN ROTATOR COMMAND:", readOut)
+                with open(filenameLog, 'a') as f:
+                    f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " Unknown rotator command received: " + readOut + ".\n")
             if commandedBearing[0] != None:
                     azDesired = (commandedBearing[0])
             if commandedBearing[1] != None:
