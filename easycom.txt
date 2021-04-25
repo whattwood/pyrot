@@ -1,4 +1,4 @@
-pyrot will interface with hamlib's rigctl via easycom protocol:
+pyrot will interface with hamlib's rotctl via easycom protocol:
 
 EASYCOMM II Standard
 --------------------
