@@ -71,12 +71,16 @@ def valueChanged(encoderValue): # This happens when encoder moves
         azActual -= 1 #if encoder pin reads 1 and direction is ccw, 1 degree is subtracted from azimuth value.
     elif azMotion == "stopped" and encoderValue == 1:
         print(bcolors.FAIL + "ERROR! Motion detector while rotator should be stopped!" + bcolors.ENDC)
+        with open(filenameLog, 'a') as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "ERROR! Motion detector while rotator should be stopped!\n")
         if azLastMotion == "cw" and encoderValue == 1:
             azActual += 1 #if encoder pin reads 1 and direction is cw, 1 degree is added to azimuth value.
         elif azLastMotion == "ccw" and encoderValue == 1:
             azActual -= 1 #if encoder pin reads 1 and direction is ccw, 1 degree is subtracted from azimuth value.
     elif encoderValue == 1:
         print(bcolors.FAIL + "ENCODER ERROR! Motion detected while rotator in unknown motion state!" + bcolors.ENDC)
+        with open(filenameLog, 'a') as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "ENCODER ERROR! Motion detected while rotator in unknown motion state!\n")
 
 # Run valueChanged when encoder senses state change
 encoderResult = Encoder(settings.enc_az, callback=valueChanged)
@@ -116,6 +120,16 @@ else:
     azActual = 0.0
     elActual = 0.0
     time.sleep(20)
+
+filenameLog = "/var/spool/pyrot/pyrot_log.txt"
+print ("Does " + filenameLog + " exist? " + str(path.isfile(filenameLog)))
+if path.isfile("filenameLog") is True:
+    with open(filenameLog, 'a') as f:
+         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot started.\n')
+else:
+    os.system("touch " + filenameLog)
+    with open(filenameLog, 'a') as f:
+         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot started.\n')
 
 count = 0
 azMotion = "stopped"
@@ -191,8 +205,8 @@ except KeyboardInterrupt:
     pass
 
 # Script shutdown commands
-print("\r\nFinal Azimuth Value:",azActual)
-print("\r\nFinal Elevation Value:",elActual)
+print("Final Azimuth Value:",azActual)
+print("Final Elevation Value:",elActual)
 os.system("screen -S pyrot1 -X quit")
 os.system("screen -S pyrot2 -X quit")
 pi.i2c_write_device(relay_bus,relay_cw_off)
@@ -204,3 +218,5 @@ fileString = (str(azActual) + ", " + str(elActual) + "\n")
 with open(filename, 'w') as filetowrite:
     filetowrite.write(fileString)
 print (bcolors.OKGREEN + "Saved final AZ/EL positions to file " + bcolors.ENDC)
+with open(filenameLog, 'a') as f:
+     f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot stopped.\n')
