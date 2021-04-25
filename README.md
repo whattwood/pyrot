@@ -2,10 +2,10 @@
 ## Python antenna rotator controller for Raspberry Pi
 
 ### Files:
-```setting.py``` Settings for the script, modify to match your hardware
-```pyrot.py``` Rotator control script, this is the one you run
-```easycom.txt``` Reference for easycom commands, not required
-```encoder.py``` Not used, function for reading rotary encoder. May be implemented in the future
+- ```setting.py``` Settings for the script, modify to match your hardware
+- ```pyrot.py``` Rotator control script, this is the one you run
+- ```easycom.txt``` Reference for easycom commands, not required
+- ```encoder.py``` Not used, function for reading rotary encoder. May be implemented in the future
 
 ### Requirements:
 - designed for Python 3
