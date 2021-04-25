@@ -73,7 +73,7 @@ def valueChanged(encoderValue): # This happens when encoder moves
         print(bcolors.FAIL + "ENCODER ERROR! Motion detected while rotator in unknown motion state!" + bcolors.ENDC)
 
 # Run valueChanged when encoder senses state change
-encoderResult = Encoder(settings.enc_clk, callback=valueChanged)
+encoderResult = Encoder(settings.enc_az, callback=valueChanged)
 
 # Initial section of code, runs once
 os.system('clear')
