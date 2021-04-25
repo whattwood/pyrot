@@ -41,7 +41,7 @@
 - fixed sensor bounce
 - store position in file when rotator is stopped for 10 seconds and on script shutdown
 - Still requires wiring diagram
-- should clean up code to prevent error messages when pigpiod is already running and when rotator position file already exisits
+- added log file
 
 ### 2021.04.24 Update
 - ISSUE: need some debounce, not counting GPIO pin clicks correctly
