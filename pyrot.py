@@ -17,7 +17,7 @@ import pigpio
 pi = pigpio.pi() #define which Raspberry Pi the pigpio daemon will control - the local one of course!
 
 import RPi.GPIO as GPIO
-GPIO.setmode(GPIO.BOARD) # choose the pin numbering scheme
+GPIO.setmode(GPIO.BOARD) #choose the pin numbering scheme
 
 import settings #read our settings.py file and set the objects below
 relay_bus=pi.i2c_open(1,settings.relay_board)
@@ -62,7 +62,7 @@ class Encoder: #detect and report state changes to rotator position sensor
     def getValue(self):
         return self.value
 
-def valueChanged(encoderValue): # This happens when encoder moves
+def valueChanged(encoderValue): #This happens when encoder moves
     global azMotion, azActual, azLastmotion
     encoderValue=encoderResult.getValue()
     if azMotion == "cw" and encoderValue == 1:
@@ -84,6 +84,25 @@ def valueChanged(encoderValue): # This happens when encoder moves
 
 # Run valueChanged when encoder senses state change
 encoderResult = Encoder(settings.enc_az, callback=valueChanged)
+
+def pyrotShutdown(): #Script shutdown commands
+    print("Final Azimuth Value:",azActual)
+    print("Final Elevation Value:",elActual)
+    os.system("screen -S pyrot1 -X quit")
+    os.system("screen -S pyrot2 -X quit")
+    pi.i2c_write_device(relay_bus,relay_cw_off)
+    pi.i2c_write_device(relay_bus,relay_ccw_off)
+    pi.i2c_close(relay_bus)
+    print(bcolors.DEFAULT + "Cleaned up running processes")
+    filename='/var/spool/pyrot/pyrot_position.txt'
+    fileString = (str(azActual) + ", " + str(elActual) + "\n")
+    with open(filename, 'w') as filetowrite:
+        filetowrite.write(fileString)
+    print (bcolors.OKGREEN + "Saved final AZ/EL positions to file " + bcolors.ENDC)
+    with open(filenameLog, 'a') as f:
+         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot stopped.\n')
+    exit()
+
 
 # Initial section of code, runs once
 os.system('clear')
@@ -204,19 +223,5 @@ try:
 except KeyboardInterrupt:
     pass
 
-# Script shutdown commands
-print("Final Azimuth Value:",azActual)
-print("Final Elevation Value:",elActual)
-os.system("screen -S pyrot1 -X quit")
-os.system("screen -S pyrot2 -X quit")
-pi.i2c_write_device(relay_bus,relay_cw_off)
-pi.i2c_write_device(relay_bus,relay_ccw_off)
-pi.i2c_close(relay_bus)
-print(bcolors.DEFAULT + "Cleaned up running processes")
-filename='/var/spool/pyrot/pyrot_position.txt'
-fileString = (str(azActual) + ", " + str(elActual) + "\n")
-with open(filename, 'w') as filetowrite:
-    filetowrite.write(fileString)
-print (bcolors.OKGREEN + "Saved final AZ/EL positions to file " + bcolors.ENDC)
-with open(filenameLog, 'a') as f:
-     f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot stopped.\n')
+
+pyrotShutdown() #shut script down
