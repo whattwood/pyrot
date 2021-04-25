@@ -4,8 +4,8 @@
 ### Files:
 - ```setting.py``` Settings for the script, modify to match your hardware
 - ```pyrot.py``` Rotator control script, this is the one you run
-- ```easycom.txt``` Reference for easycom commands, not required
-- ```encoder.py``` Not used, function for reading rotary encoder. May be implemented in the future
+- ```easycom.txt``` Not used, reference for easycom commands only
+- ```encoder.py``` Not used, function for reading rotary encoder; may be implemented in the future
 
 ### Requirements:
 - designed for Python 3
