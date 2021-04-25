@@ -72,7 +72,7 @@ def valueChanged(encoderValue): #This happens when encoder moves
     elif azMotion == "stopped" and encoderValue == 1:
         print(bcolors.FAIL + "ERROR! Motion detector while rotator should be stopped!" + bcolors.ENDC)
         with open(filenameLog, 'a') as f:
-            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "ERROR! Motion detector while rotator should be stopped!\n")
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ERROR! Motion detector while rotator should be stopped!\n")
         if azLastMotion == "cw" and encoderValue == 1:
             azActual += 1 #if encoder pin reads 1 and direction is cw, 1 degree is added to azimuth value.
         elif azLastMotion == "ccw" and encoderValue == 1:
@@ -80,7 +80,7 @@ def valueChanged(encoderValue): #This happens when encoder moves
     elif encoderValue == 1:
         print(bcolors.FAIL + "ENCODER ERROR! Motion detected while rotator in unknown motion state!" + bcolors.ENDC)
         with open(filenameLog, 'a') as f:
-            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "ENCODER ERROR! Motion detected while rotator in unknown motion state!\n")
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ENCODER ERROR! Motion detected while rotator in unknown motion state!\n")
 
 # Run valueChanged when encoder senses state change
 encoderResult = Encoder(settings.enc_az, callback=valueChanged)
@@ -221,7 +221,7 @@ try:
                 if azMotion != "stopped" and azStableCount > 2: #if no motion detected for 3 cycles while rotator should be moving
                     print(bcolors.FAIL + "ERROR! No motion detected while rotator should be turning! Shutting script down." + bcolors.ENDC)
                     with open(filenameLog, 'a') as f:
-                        f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "ERROR! No motion detected while rotator should be turning! Shutting script down.\n")
+                        f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ERROR! No motion detected while rotator should be turning! Shutting script down.\n")
                     pyrotShutdown() #shut script down
                 if azStableCount == 10:
                     filename='/var/spool/pyrot/pyrot_position.txt'
