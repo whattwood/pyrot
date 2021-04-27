@@ -72,7 +72,7 @@ def valueChanged(encoderValue): #This happens when encoder moves
     elif azMotion == "stopped" and encoderValue == 1:
         print(bcolors.FAIL + "ERROR! Motion detector while rotator should be stopped!" + bcolors.ENDC)
         with open(filenameLog, 'a') as f:
-            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ERROR! Motion detected while rotator should be stopped!\n")
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " Motion detected while rotator stopped. If you see more than 1 of these messages in a row we have a problem!!\n")
         if azLastMotion == "cw" and encoderValue == 1:
             azActual += 1 #if encoder pin reads 1 and direction is cw, 1 degree is added to azimuth value.
         elif azLastMotion == "ccw" and encoderValue == 1:
