@@ -29,9 +29,9 @@ relay_ccw_off=[settings.relay_ccw,settings.relay_off]
 
 os.system("clear") #clear screen
 time.sleep(.1)
-os.system("screen -S pyrot1 -dm socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
+os.system("screen -dmS pyrot1 socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 time.sleep(.3)
-os.system("screen -S pyrot2 -dm rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
+os.system("screen -dmS pyrot2 rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
 time.sleep(.3)
 
 class bcolors: #setup colours to be used while printing text to screen
