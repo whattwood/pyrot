@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # Pi Rotator controller software by VE6WK 2021 intended for DC rotator with pulse sensor such as Alpha Spid
 
+os.system("clear") #clear screen
+time.sleep(.1)
+
+print("pyrot is a Python Rotator controller typically used by Ham Radio Operators")
+#print("\n    This program is free software: you can redistribute it and/or modify\n    it under the terms of the GNU General Public License as published by\n    the Free Software Foundation, either version 3 of the License, or\n    any later version.")
+#print("\n    This program is distributed in the hope that it will be useful,\n    but WITHOUT ANY WARRANTY; without even the implied warranty of\n    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n    GNU General Public License for more details.")
+print("\n\n   pyrot  Copyright (C) 2021 by VE6WK")
+print("\n\n    This program comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it\n    under certain conditions.")
+
 import time, sys, select, os, serial #load the python modules we'll be using #imports and startup software
 
 import os.path
@@ -27,8 +36,6 @@ relay_cw_off=[settings.relay_cw,settings.relay_off]
 relay_ccw_on=[settings.relay_ccw,settings.relay_on]
 relay_ccw_off=[settings.relay_ccw,settings.relay_off]
 
-os.system("clear") #clear screen
-time.sleep(.1)
 os.system("screen -dmS pyrot1 socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 time.sleep(.3)
 os.system("screen -dmS pyrot2 rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
