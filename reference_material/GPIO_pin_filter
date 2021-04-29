@@ -1,0 +1,4 @@
+https://www.digikey.com/en/articles/protecting-inputs-in-digital-electronics
+
+Used above resource to wire 1K resistor in series with sensor, then 20K resistor and 10nF capacitor in parallel to ground.
+GPIO pin is attached between 1K resistor and 20K resistor.
