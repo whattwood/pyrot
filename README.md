@@ -45,6 +45,7 @@
 - changed from settings.py module to settings.txt read with ConfigParser
 - found working crontab entry
 - added timer to prevent immediate switch from cw to ccw (I blew a fuse!)
+- added documentation for RF filter on GPIO pin to prevent FM overload
 
 ### 2021.04.25 Update
 - fixed sensor bounce
