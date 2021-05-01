@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # Pi Rotator controller software by VE6WK 2021 intended for DC rotator with pulse sensor such as Alpha Spid
 
+import time, sys, select, os, serial #load the python modules we'll be using #imports and startup software
+
+import os.path
+from os import path #used for checking whether files exist
+
 os.system("clear") #clear screen
 time.sleep(.1)
 
@@ -9,11 +14,6 @@ print("pyrot is a Python Rotator controller typically used by Ham Radio Operator
 #print("\n    This program is distributed in the hope that it will be useful,\n    but WITHOUT ANY WARRANTY; without even the implied warranty of\n    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n    GNU General Public License for more details.")
 print("\n\n   pyrot  Copyright (C) 2021 by VE6WK")
 print("\n\n    This program comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it\n    under certain conditions.")
-
-import time, sys, select, os, serial #load the python modules we'll be using #imports and startup software
-
-import os.path
-from os import path #used for checking whether files exist
 
 tmp = os.popen("ps -Af").read() #detect if pigpiod is already running
 processCount = tmp.count('pigpiod')
