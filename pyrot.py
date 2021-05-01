@@ -200,15 +200,17 @@ try:
                 elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
 
             if azDesired < azActual - 1 and azMotion != "ccw": #if the desired position is different than the actual position by more than 1 degree
-                pi.i2c_write_device(relay_bus,relay_ccw_on)
                 pi.i2c_write_device(relay_bus,relay_cw_off)
+                time.sleep(.3) #pause for a moment so we don't end up going from cw to ccw instantly and blow a fuse
+                pi.i2c_write_device(relay_bus,relay_ccw_on)
                 azMotion = "ccw"
                 azStableCount = 0
             elif azDesired < azActual - 1 and azMotion == "ccw":
                 pass
             elif azDesired > azActual + 1 and azMotion != "cw": #if the desired position is different than the actual position by more than 1 degree
-                pi.i2c_write_device(relay_bus,relay_cw_on)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
+                time.sleep(.3) #pause for a moment so we don't end up going from ccw to cw instantly and blow a fuse
+                pi.i2c_write_device(relay_bus,relay_cw_on)
                 azMotion = "cw"
                 azStableCount = 0
             elif azDesired > azActual - 1 and azMotion == "cw":
