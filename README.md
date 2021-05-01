@@ -31,6 +31,9 @@
 7. ```chmod +x pyrot.py``` Make pyrot executable
 8. Add /etc/pyrot/pyrot.py to startup using /etc/rc.local or cron job
 
+## Compile to executable binary with nuitka if desired
+```pip install Nuitka```
+```python3 -mnuitka --follow-imports --standalone hello.py```
 
 
 -------------------------------------------------------------------
