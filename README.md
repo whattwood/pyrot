@@ -1,11 +1,12 @@
 # pyrot
 ## Python antenna rotator controller for Raspberry Pi
+## Intended to be located at /etc/pyrot
 
 ### Files:
-- ```setting.py``` Settings for the script, modify to match your hardware
+- ```setting.txt``` Settings for the script, modify to match your hardware
 - ```pyrot.py``` Rotator control script, this is the one you run
 - ```/var/spool/pyrot/pyrot_position.txt``` Saved position file so pyrot starts up with known rotator position
-- ```/var/spool/pyrot/pyrot_log.txt``` Log file for script errors etc.
+- ```/etc/pyrot/pyrot_log.txt``` Log file for script errors etc. is created here
 - 
 ### Requirements:
 - designed for Python 3
@@ -21,14 +22,14 @@
 
 ## Installation Instructions
 
-1. ```cd /usr/src```
+1. ```cd /etc```
 2. ```git clone https://github.com/whattwood/pyrot.git```
 3. ```cd /pyrot```
-4. ```nano setting.py``` Change settings to match your hardware, save with Control-x
+4. ```nano setting.txt``` Change settings to match your hardware, save with Control-x
 5. ```python -V``` Ensure python version is at least 3
 6. ```python pyrot.py``` Run pyrot script to ensure it works
 7. ```chmod +x pyrot.py``` Make pyrot executable
-8. Add /usr/src/pyrot/pyrot.py to startup using /etc/rc.local or cron job
+8. Add /etc/pyrot/pyrot.py to startup using /etc/rc.local or cron job
 
 
 
