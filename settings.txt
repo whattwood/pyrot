@@ -1,29 +1,29 @@
-# Settings for pyrot
+# Settings file for pyrot
 
 [pyrotvars]
 
-# ---GPIO pin(s) for rotary encoder---
+### GPIO pin(s) for rotary encoder ###
 
-#this pin is used for the azimuth sensor
+# This pin is used for the azimuth sensor
 enc_az = 26
 
-#this pin will be ussed for elevation sensor in the future
+# This pin will be ussed for elevation sensor in the future
 enc_el = 24
 
 
-# ---Relay outputs---
+### i2c Relay Information ###
 
-#i2c relay board address
+# i2c relay board address, something like 0x10
 relay_board = 0x11
 
-#i2c relay number for clockwise direction
+# i2c relay number for clockwise direction, if it's relay number 1 the address might be 0x01 or 0x00
 relay_cw = 0x01
 
-#i2c relay number for counterclockwise direction
+# i2c relay number for counterclockwise direction, if it's relay number 2 the address might be 0x02 or 0x01
 relay_ccw = 0x02
 
-#i2c relay on command
+# i2c relay on command, usually 0x01 or 0xff
 relay_on = 0x01
 
-#i2c relay off command
+# i2c relay off command, usually 0x00
 relay_off = 0x00
