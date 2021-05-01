@@ -10,8 +10,6 @@ os.system("clear") #clear screen
 time.sleep(.1)
 
 print("\n    pyrot is a Python Rotator controller typically used by Ham Radio Operators")
-#print("\n    This program is free software: you can redistribute it and/or modify\n    it under the terms of the GNU General Public License as published by\n    the Free Software Foundation, either version 3 of the License, or\n    any later version.")
-#print("\n    This program is distributed in the hope that it will be useful,\n    but WITHOUT ANY WARRANTY; without even the implied warranty of\n    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n    GNU General Public License for more details.")
 print("\n\n   pyrot  Copyright (C) 2021 by VE6WK")
 print("\n\n    This program comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it\n    under certain conditions.\n\n")
 
@@ -29,7 +27,7 @@ pi = pigpio.pi() #define which Raspberry Pi the pigpio daemon will control - the
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD) #choose the pin numbering scheme
 
-#import settings from our settings.txt file and set the i2c objects below
+# Import settings from our settings.txt file and set the i2c objects below
 config = configparser.ConfigParser()
 config.read("/etc/pyrot/settings.txt")
 relay_bus=pi.i2c_open(1,int(config.get("pyrotvars","relay_board"),16))
@@ -204,7 +202,7 @@ try:
 
             if azDesired < azActual - 1 and azMotion != "ccw": #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_cw_off)
-                time.sleep(.4) #pause for a moment so we don't end up going from cw to ccw instantly and blow a fuse
+                time.sleep(.3) #pause for a moment so we don't end up going from cw to ccw instantly and blow a fuse
                 pi.i2c_write_device(relay_bus,relay_ccw_on)
                 azMotion = "ccw"
                 azStableCount = 0
@@ -212,7 +210,7 @@ try:
                 pass
             elif azDesired > azActual + 1 and azMotion != "cw": #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
-                time.sleep(.4) #pause for a moment so we don't end up going from ccw to cw instantly and blow a fuse
+                time.sleep(.3) #pause for a moment so we don't end up going from ccw to cw instantly and blow a fuse
                 pi.i2c_write_device(relay_bus,relay_cw_on)
                 azMotion = "cw"
                 azStableCount = 0
