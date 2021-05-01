@@ -29,14 +29,15 @@ pi = pigpio.pi() #define which Raspberry Pi the pigpio daemon will control - the
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD) #choose the pin numbering scheme
 
-#import settings #read our settings.py file and set the objects below
+#import settings from our settings.txt file and set the i2c objects below
 config = configparser.ConfigParser()
 config.read("/etc/pyrot/settings.txt")
-relay_bus=pi.i2c_open(1,config.get("pyrotvars","relay_board"))
-relay_cw_on=[config.get("pyrotvars","relay_cw"),config.get("pyrotvars","relay_on")]
-relay_cw_off=[config.get("pyrotvars","relay_cw"),config.get("pyrotvars","relay_off")]
-relay_ccw_on=[config.get("pyrotvars","relay_ccw"),config.get("pyrotvars","relay_on")]
-relay_ccw_off=[config.get("pyrotvars","relay_ccw"),config.get("pyrotvars","relay_off")]
+relay_bus=pi.i2c_open(1,int(config.get("pyrotvars","relay_board"),16))
+relay_cw_on=[int(config.get("pyrotvars","relay_cw"),16),int(config.get("pyrotvars","relay_on"),16)]
+relay_cw_off=[int(config.get("pyrotvars","relay_cw"),16),int(config.get("pyrotvars","relay_off"),16)]
+relay_ccw_on=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_on"),16)]
+relay_ccw_off=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_off"),16)]
+enc_az=int(config.get("pyrotvars", "enc_az"),16)
 
 os.system("screen -dmS pyrot1 socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 time.sleep(.3)
@@ -96,7 +97,7 @@ def valueChanged(encoderValue): #This happens when encoder moves
             f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ENCODER ERROR! Motion detected while rotator in unknown motion state!\n")
 
 # Run valueChanged when encoder senses state change
-encoderResult = Encoder(config.get("pyrotvars", "enc_az"), callback=valueChanged)
+encoderResult = Encoder(enc_az), callback=valueChanged)
 
 def pyrotShutdown(): #Script shutdown commands
     print("Final Azimuth Value:",azActual)
