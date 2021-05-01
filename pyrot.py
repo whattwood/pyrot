@@ -97,7 +97,7 @@ def valueChanged(encoderValue): #This happens when encoder moves
             f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ENCODER ERROR! Motion detected while rotator in unknown motion state!\n")
 
 # Run valueChanged when encoder senses state change
-encoderResult = Encoder(enc_az), callback=valueChanged)
+encoderResult = Encoder(enc_az, callback=valueChanged)
 
 def pyrotShutdown(): #Script shutdown commands
     print("Final Azimuth Value:",azActual)
