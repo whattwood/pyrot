@@ -119,7 +119,7 @@ def pyrotShutdown(): #Script shutdown commands
 
 # Initial section of code, runs once
 os.system('clear')
-print("GPIO AZ Encoder Pin:",config.get("pyrotvars", "enc_az")
+print("GPIO AZ Encoder Pin:",config.get("pyrotvars", "enc_az"))
 print("Press Control-C to exit")
 pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
