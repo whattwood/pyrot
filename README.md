@@ -40,6 +40,12 @@
 -------------------------------------------------------------------
 ## CHANGELOG
 
+### 2021.05.01 Update
+- changed structure to expect /etc/pyrot directory
+- changed from settings.py module to settings.txt read with ConfigParser
+- found working crontab entry
+- added timer to prevent immediate switch from cw to ccw (I blew a fuse!)
+
 ### 2021.04.25 Update
 - fixed sensor bounce
 - store position in file when rotator is stopped for 10 seconds and on script shutdown
