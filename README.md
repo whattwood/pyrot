@@ -1,6 +1,5 @@
 # pyrot
-## Python antenna rotator controller for Raspberry Pi
-## Intended to be located at /etc/pyrot
+## Python antenna rotator controller for Raspberry Pi, should be located at /etc/pyrot
 
 ### Files:
 - ```setting.txt``` Settings for the script, modify to match your hardware
