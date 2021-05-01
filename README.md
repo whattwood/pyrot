@@ -32,8 +32,8 @@
 8. Add /etc/pyrot/pyrot.py to startup using /etc/rc.local or cron job
 
 ## Compile to executable binary with nuitka if desired
-```pip install Nuitka```
-```python3 -mnuitka --follow-imports --standalone hello.py```
+1. ```pip install Nuitka```
+2. ```python3 -mnuitka --follow-imports --standalone hello.py```
 
 
 -------------------------------------------------------------------
