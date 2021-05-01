@@ -29,6 +29,8 @@
 6. ```python pyrot.py``` Run pyrot script to ensure it works
 7. ```chmod +x pyrot.py``` Make pyrot executable
 8. Add /etc/pyrot/pyrot.py to startup using /etc/rc.local or cron job
+9. ```crontab -e``` Edit crontab file
+10. ```@reboot /usr/bin/screen -dmS pyrot0 /etc/pyrot/pyrot.py``` Paste this line at the bottom and save
 
 ## Compile to executable binary with nuitka if desired
 1. ```pip install Nuitka```
