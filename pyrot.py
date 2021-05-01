@@ -108,7 +108,7 @@ def pyrotShutdown(): #Script shutdown commands
     pi.i2c_write_device(relay_bus,relay_ccw_off)
     pi.i2c_close(relay_bus)
     print(bcolors.DEFAULT + "Cleaned up running processes")
-    filename='/etc/pyrot/pyrot_position.txt'
+    filename='/var/spool/pyrot/pyrot_position.txt'
     fileString = (str(azActual) + ", " + str(elActual) + "\n")
     with open(filename, 'w') as filetowrite:
         filetowrite.write(fileString)
@@ -126,9 +126,9 @@ pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
 ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
 
-print ("Does /etc/pyrot/pyrot_position.txt exist? " + str(path.isfile("/etc/pyrot/pyrot_position.txt")))
-if path.isfile("/etc/pyrot/pyrot_position.txt") is True:
-    filename="/etc/pyrot/pyrot_position.txt"
+print ("Does /var/spool/pyrot/pyrot_position.txt exist? " + str(path.isfile("/var/spool/pyrot/pyrot_position.txt")))
+if path.isfile("/var/spool/pyrot/pyrot_position.txt") is True:
+    filename="/var/spool/pyrot/pyrot_position.txt"
     with open(filename, 'r') as f:
         readOut = f.read()    # results in a str object
     newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
@@ -137,19 +137,19 @@ if path.isfile("/etc/pyrot/pyrot_position.txt") is True:
         if savedPosition[0] != None:
             azActual = (savedPosition[0])
     except:
-        print(bcolors.FAIL + "/etc/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
+        print(bcolors.FAIL + "/var/spool/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
         exit()
     try:
         if savedPosition[1] != None:
             elActual = (savedPosition[1])
     except:
-        print(bcolors.FAIL + "/etc/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
+        print(bcolors.FAIL + "/var/spool/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
         exit()
 else:
     print(bcolors.FAIL + "Previous position file does not exist, setting values to 0 degrees! Ensure rotator position is North or press Control-C NOW!!!" + bcolors.ENDC)
     print("Waiting 20 seconds for input...")
-    os.system("mkdir /etc/pyrot/")
-    os.system("touch /etc/pyrot/pyrot_position.txt")
+    os.system("mkdir /var/spool/pyrot/")
+    os.system("touch /var/spool/pyrot/pyrot_position.txt")
     azActual = 0.0
     elActual = 0.0
     time.sleep(20)
@@ -242,7 +242,7 @@ try:
                         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ERROR! No motion detected while rotator should be turning! Shutting script down.\n")
                     pyrotShutdown() #shut script down
                 if azStableCount == 10:
-                    filename='/etc/pyrot/pyrot_position.txt'
+                    filename='/var/spool/pyrot/pyrot_position.txt'
                     fileString = (str(azActual) + ", " + str(elActual) + "\n")
                     with open(filename, 'w') as filetowrite:
                         filetowrite.write(fileString)
