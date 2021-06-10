@@ -2,6 +2,9 @@
 
 [pyrotvars]
 
+# (virtual) COM port to listen on
+comport = /dev/ttyS22
+
 ### GPIO pin(s) for rotary encoder ###
 
 # This pin is used for the azimuth sensor
