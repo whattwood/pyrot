@@ -181,7 +181,7 @@ try:
             readOut = ser.readline().decode('ascii') #read serial port for any updated commands
 
             if "AZ EL" in readOut: #if position is requested by hamlib
-                ser.write(str(azelReply).encode('ascii')) #reply with position
+                ser.write(str(azelReply + "\r\n").encode('ascii')) #reply with position
             elif "AZ" in readOut: #if position command is received
                 newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
                 commandedBearing = [float(i) for i in newstr.split()] #save numbers in commandedBearing
