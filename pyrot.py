@@ -36,6 +36,7 @@ relay_cw_off=[int(config.get("pyrotvars","relay_cw"),16),int(config.get("pyrotva
 relay_ccw_on=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_on"),16)]
 relay_ccw_off=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_off"),16)]
 enc_az=int(config.get("pyrotvars", "enc_az"))
+comport=str(config.get("pyrotvars", "comport"))
 
 os.system("screen -dmS pyrot1 socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
 time.sleep(.3)
@@ -122,7 +123,7 @@ print("GPIO AZ Encoder Pin:",config.get("pyrotvars", "enc_az"))
 print("Press Control-C to exit")
 pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
-ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
+ser = serial.Serial(comport, 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
 
 print ("Does /var/spool/pyrot/pyrot_position.txt exist? " + str(path.isfile("/var/spool/pyrot/pyrot_position.txt")))
 if path.isfile("/var/spool/pyrot/pyrot_position.txt") is True:
