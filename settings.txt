@@ -2,7 +2,7 @@
 
 [pyrotvars]
 
-# (virtual) COM port to listen on, /dev/ttyS22 by default. This is the port Hamlib's rotctld should be pointed to with EasycomII format
+# (virtual) COM port to listen on, /dev/ttyS22 by default. This is the port Hamlib's rotctld will be pointed to with EasycomII format
 comport = /dev/ttyS22
 
 
