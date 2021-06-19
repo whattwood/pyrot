@@ -183,13 +183,17 @@ azStable = azActual
 azStableCount = 0
 #azelReply = "+0" + str(azActual) + "+0" + str(elActual) # String for replies to position inquiries from hamlib
 commandedBearing = [azActual, elActual]
+readTemp = ""
 
 # main code loop
 try:
     while True:
         while True:
             count += 1
-            readOut = ser.readline().decode('ascii') #read serial port for any updated commands
+            readTemp += ser.readline().decode('ascii') #read serial port for any commands or partial commands
+            if '\n' or '\l' in readTemp:
+                readOut = readTemp
+                readTemp = ""
             if readOut != "":
                 print(bcolors.OKBLUE + "RS232 Received: " + readOut)
             if "C2" in readOut: #if az el position is requested
