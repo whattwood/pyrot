@@ -10,6 +10,7 @@
 ### Requirements:
 - designed for Python 3
 - hamlib must be installed
+- ser2net must be installed
 - pigpio must be installed
 - requires 2 x i2c relays
 - reads single pulse 1 degree rotary encoder only (so far...)
@@ -17,7 +18,6 @@
 ### Current Functionality
 - Tested with AlphaSpid RAK rotator
 - Azimuth control only
-- Set up for hamlib, but could easily be modified to accept Easycom commands on Raspberry Pi serial port by changin socat line
 
 ## Installation Instructions
 
@@ -39,6 +39,11 @@
 
 -------------------------------------------------------------------
 ## CHANGELOG
+
+### 2021.06.19
+- changed from Easycom II to GS-232a protocol
+- added ser2net functionality
+- 2 meter FM transmit > 30W still wipes out GPIO sensing pin, causes pyrot to lose track of position and shutdown 
 
 ### 2021.05.01 Update
 - changed structure to expect /etc/pyrot directory
