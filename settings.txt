@@ -4,9 +4,10 @@
 
 ### GLOBAL SETTINGS
 
-# Define connection, "ser2net" for RS-232 Yaesu GS-232A emulation (define ttyS21 in /etc/ser2net.conf) over IP or "hamlib" for Rotctld
+# Define connection, "ser2net" for RS-232 Yaesu GS-232A emulation over IP (define ttyS21 in /etc/pyrot/ser2net.conf) or "hamlib" for Rotctld
 #comtype = ser2net
 comtype = hamlib
+
 
 ### GPIO pin(s) for rotary encoder ###
 
