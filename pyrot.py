@@ -10,6 +10,8 @@ os.system("clear") #clear screen
 time.sleep(.1)
 
 print("\n    pyrot is a Python Rotator controller typically used by Ham Radio Operators")
+#print("\n    This program is free software: you can redistribute it and/or modify\n    it under the terms of the GNU General Public License as published by\n    the Free Software Foundation, either version 3 of the License, or\n    any later version.")
+#print("\n    This program is distributed in the hope that it will be useful,\n    but WITHOUT ANY WARRANTY; without even the implied warranty of\n    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n    GNU General Public License for more details.")
 print("\n\n   pyrot  Copyright (C) 2021 by VE6WK")
 print("\n\n    This program comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it\n    under certain conditions.\n\n")
 
@@ -27,7 +29,7 @@ pi = pigpio.pi() #define which Raspberry Pi the pigpio daemon will control - the
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD) #choose the pin numbering scheme
 
-# Import settings from our settings.txt file and set the i2c objects below
+#import settings from our settings.txt file and set the i2c objects below
 config = configparser.ConfigParser()
 config.read("/etc/pyrot/settings.txt")
 relay_bus=pi.i2c_open(1,int(config.get("pyrotvars","relay_board"),16))
@@ -36,12 +38,19 @@ relay_cw_off=[int(config.get("pyrotvars","relay_cw"),16),int(config.get("pyrotva
 relay_ccw_on=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_on"),16)]
 relay_ccw_off=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_off"),16)]
 enc_az=int(config.get("pyrotvars", "enc_az"))
-comport=str(config.get("pyrotvars", "comport"))
+comtype=str(config.get("pyrotvars", "comtype"))
 
-os.system("screen -dmS pyrot1 socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=" + comport) #create virtual serial port link on a detached screen
+os.system("screen -dmS pyrot1 socat pty,raw,echo=0,link=/dev/ttyS21 pty,raw,echo=0,link=/dev/ttyS22") #create virtual serial ports on a detached screen
+print("\n   Started socat")
 time.sleep(.3)
-os.system("screen -dmS pyrot2 /usr/local/bin/rotctld -m 202 -r /dev/ttyS21 -s 115200") #start hamlib for Easycom 2 protocol on a detached screen
-time.sleep(.3)
+if comtype == "hamlib":
+    os.system("screen -dmS pyrot2 /usr/local/bin/rotctld -m 601 -r /dev/ttyS21 -s 115200") #start hamlib on a detached screen
+    print("\n   Started rotctld")
+    time.sleep(.3)
+elif comtype == "ser2net":
+    os.system("screen -dmS pyrot2 /usr/sbin/ser2net -n -c /etc/pyrot/ser2net.conf") #start ser2net using config at /etc/ser2net.conf
+    print("\n   Started ser2net")
+    time.sleep(.3)
 
 class bcolors: #setup colours to be used while printing text to screen
     DEFAULT = '\x1b[0m'
@@ -103,6 +112,7 @@ def pyrotShutdown(): #Script shutdown commands
     print("Final Elevation Value:",elActual)
     os.system("screen -S pyrot1 -X quit")
     os.system("screen -S pyrot2 -X quit")
+    os.system("kill $(ps aux | grep '/etc/pyrot/ser2net.conf' | awk '{print $2}')")
     pi.i2c_write_device(relay_bus,relay_cw_off)
     pi.i2c_write_device(relay_bus,relay_ccw_off)
     pi.i2c_close(relay_bus)
@@ -123,15 +133,16 @@ print("GPIO AZ Encoder Pin:",config.get("pyrotvars", "enc_az"))
 print("Press Control-C to exit")
 pi.i2c_write_device(relay_bus,relay_cw_off) #turn clockwise relay off
 pi.i2c_write_device(relay_bus,relay_ccw_off) #turn counter-clockwise relay off
-ser = serial.Serial(comport, 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
+ser = serial.Serial('/dev/ttyS22', 115200, timeout = .01) #connect to serial port piped to rotctld, timeout is important because reading rs232 stalls the whole script
 
 print ("Does /var/spool/pyrot/pyrot_position.txt exist? " + str(path.isfile("/var/spool/pyrot/pyrot_position.txt")))
 if path.isfile("/var/spool/pyrot/pyrot_position.txt") is True:
     filename="/var/spool/pyrot/pyrot_position.txt"
     with open(filename, 'r') as f:
         readOut = f.read()    # results in a str object
+    print(readOut)
     newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
-    savedPosition = [float(i) for i in newstr.split()] #save numbers in savedPosition object
+    savedPosition = [int(i) for i in newstr.split()] #save numbers in savedPosition object
     try:
         if savedPosition[0] != None:
             azActual = (savedPosition[0])
@@ -145,15 +156,15 @@ if path.isfile("/var/spool/pyrot/pyrot_position.txt") is True:
         print(bcolors.FAIL + "/var/spool/pyrot/pyrot_position.txt has invalid values!" + bcolors.ENDC)
         exit()
 else:
-    print(bcolors.FAIL + "Previous position file does not exist, setting values to 0 degrees! Ensure rotator position is North or press Control-C NOW!!!" + bcolors.ENDC)
+    print(bcolors.FAIL + "Previous position file does not exist, setting values to 0 degrees! Ensure rotator position is South or press Control-C NOW!!!" + bcolors.ENDC)
     print("Waiting 20 seconds for input...")
     os.system("mkdir /var/spool/pyrot/")
     os.system("touch /var/spool/pyrot/pyrot_position.txt")
-    azActual = 0.0
-    elActual = 0.0
+    azActual = 180
+    elActual = 000
     time.sleep(20)
 
-filenameLog = "/etc/pyrot/pyrot_log.txt"
+filenameLog = "/var/spool/pyrot/pyrot_log.txt"
 print ("Does " + filenameLog + " exist? " + str(path.isfile(filenameLog)))
 if path.isfile("filenameLog") is True:
     with open(filenameLog, 'a') as f:
@@ -170,7 +181,7 @@ azDesired = azActual
 elDesired = elActual
 azStable = azActual
 azStableCount = 0
-azelReply = "AZ" + str(azActual) + " EL" + str(elActual) # String for replies to position inquiries from hamlib
+#azelReply = "+0" + str(azActual) + "+0" + str(elActual) # String for replies to position inquiries from hamlib
 commandedBearing = [azActual, elActual]
 
 # main code loop
@@ -179,27 +190,61 @@ try:
         while True:
             count += 1
             readOut = ser.readline().decode('ascii') #read serial port for any updated commands
-
-            if "AZ EL" in readOut: #if position is requested by hamlib
-                ser.write(str(azelReply + "\r\n").encode('ascii')) #reply with position
-            elif "AZ" in readOut: #if position command is received
+            if readOut != "":
+                print(bcolors.OKBLUE + "RS232 Received: " + readOut)
+            if "C2" in readOut: #if az el position is requested
+                ser.write(str("+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
+                print(bcolors.OKCYAN + "RS232 Sent: " + "+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3))
+            elif "C" in readOut: #if az only position is requested
+                ser.write(str("+0" + str(azActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
+                print(bcolors.OKCYAN + "RS232 Sent: " + "+0" + str(azActual).zfill(3))
+            elif "B" in readOut: #if az only position is requested
+                ser.write(str("+0" + str(elActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
+                print(bcolors.OKCYAN + "RS232 Sent: " + "+0" + str(elActual).zfill(3))
+            elif "M" in readOut: #if az position command is received
                 newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
-                commandedBearing = [float(i) for i in newstr.split()] #save numbers in commandedBearing
-            elif "SA SE" in readOut: #if stop command is received
+                azDesired == newstr #save digits  in azDesired
+            elif "W" in readOut: #if az/el position command is received
+                newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
+                commandedBearing = [int(i) for i in newstr.split()] #save numbers in commandedBearing
+                if len(commandedBearing) > 0 and commandedBearing[0] != None:
+                    azDesired = (commandedBearing[0])
+                if len(commandedBearing) > 1 and commandedBearing[1] != None:
+                    elDesired = (commandedBearing[1])
+                    elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
+            elif "S" in readOut: #if all stop command is received
                 commandedBearing = [azActual, elActual] #set commandedBearing to current positions
                 pi.i2c_write_device(relay_bus,relay_cw_off) #turn off relays
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
                 azLastMotion = azMotion
                 azMotion = "stopped"
+            elif "A" in readOut: #if az stop command is received
+                commandedBearing = [azActual, elActual] #set commandedBearing to current positions
+                pi.i2c_write_device(relay_bus,relay_cw_off) #turn off relays
+                pi.i2c_write_device(relay_bus,relay_ccw_off)
+                azLastMotion = azMotion
+                azMotion = "stopped"
+            elif "E" in readOut: #if el stop command is received
+                commandedBearing = [azActual, elActual] #set commandedBearing to current positions
+                pi.i2c_write_device(relay_bus,relay_cw_off) #turn off relays
+                pi.i2c_write_device(relay_bus,relay_ccw_off)
+                azLastMotion = azMotion
+                azMotion = "stopped"
+
             elif readOut != "":
                 print ("UNKNOWN ROTATOR COMMAND:", readOut)
                 with open(filenameLog, 'a') as f:
                     f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " Unknown rotator command received: " + readOut + ".\n")
-            if commandedBearing[0] != None:
-                    azDesired = (commandedBearing[0])
-            if commandedBearing[1] != None:
-                elDesired = (commandedBearing[1])
-                elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
+
+            if azDesired > 359: #limit az to predefined stop points
+                azDesired = 359
+            elif azDesired < 1:
+                azDesired = 1
+
+            if elDesired > 89: #limit el to predefined stop points
+                elDesired = 89
+            elif elDesired < 1:
+                elDesired = 1
 
             if azDesired < azActual - 1 and azMotion != "ccw": #if the desired position is different than the actual position by more than 1 degree
                 pi.i2c_write_device(relay_bus,relay_cw_off)
@@ -224,7 +269,7 @@ try:
                 azMotion = "stopped"
 
             readOut = ""
-            azelReply = "AZ" + str(azActual) + " EL" + str(elActual)
+            #azelReply = "AZ" + str(azActual) + " EL" + str(elActual)
 
             if (count/50).is_integer() is True: #every 5 secods or so
                 os.system('clear') #clear screen
@@ -251,7 +296,7 @@ try:
             time.sleep(.01) #slow script down just in case it runs away
             break
 
-        ser.flush() #flush the serial buffer
+        #ser.flush() #flush the serial buffer
         time.sleep(.01)
 
 except KeyboardInterrupt:
