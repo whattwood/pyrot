@@ -2,16 +2,18 @@
 
 [pyrotvars]
 
-# (virtual) COM port to listen on, /dev/ttyS22 by default. This is the port Hamlib's rotctld will be pointed to with EasycomII format
-comport = /dev/ttyS22
+### GLOBAL SETTINGS
 
+# Define connection, "ser2net" for RS-232 Yaesu GS-232A emulation (define ttyS21 in /etc/ser2net.conf) over IP or "hamlib" for Rotctld
+#comtype = ser2net
+comtype = hamlib
 
 ### GPIO pin(s) for rotary encoder ###
 
 # This pin is used for the azimuth sensor
 enc_az = 26
 
-# This pin will be ussed for elevation sensor in the future
+# This pin will be used for elevation sensor in the future
 enc_el = 24
 
 
