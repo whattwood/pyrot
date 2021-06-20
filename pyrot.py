@@ -181,30 +181,38 @@ azDesired = azActual
 elDesired = elActual
 azStable = azActual
 azStableCount = 0
-#azelReply = "+0" + str(azActual) + "+0" + str(elActual) # String for replies to position inquiries from hamlib
 commandedBearing = [azActual, elActual]
+readBytes = ""
 readTemp = ""
+readOut = ""
+readTimer = 0
 
 # main code loop
 try:
     while True:
         while True:
             count += 1
-            readTemp += ser.readline().decode('ascii') #read serial port for any commands or partial commands
-            if '\n' or '\l' in readTemp:
+            readBytes += ser.read(size=16).decode('ascii') #read serial port for any incoming data
+            ser.flushInput()
+            if readBytes != "":
+                readTimer += 1
+                readTemp += readBytes
+                readBytes = ""
+            elif readTimer > 0: #if 1 cycle goes by and nothing is added to readBytes we assume the incoming data is complete
                 readOut = readTemp
                 readTemp = ""
+                readTimer = 0
             if readOut != "":
-                print(bcolors.OKBLUE + "RS232 Received: " + readOut)
+                print(bcolors.OKBLUE + "RS-232 Received: " + readOut)
             if "C2" in readOut: #if az el position is requested
                 ser.write(str("+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
-                print(bcolors.OKCYAN + "RS232 Sent: " + "+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3))
+                print(bcolors.OKCYAN + "RS-232 Sent: " + "+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3))
             elif "C" in readOut: #if az only position is requested
                 ser.write(str("+0" + str(azActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
-                print(bcolors.OKCYAN + "RS232 Sent: " + "+0" + str(azActual).zfill(3))
+                print(bcolors.OKCYAN + "RS-232 Sent: " + "+0" + str(azActual).zfill(3))
             elif "B" in readOut: #if az only position is requested
                 ser.write(str("+0" + str(elActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
-                print(bcolors.OKCYAN + "RS232 Sent: " + "+0" + str(elActual).zfill(3))
+                print(bcolors.OKCYAN + "RS-232 Sent: " + "+0" + str(elActual).zfill(3))
             elif "M" in readOut: #if az position command is received
                 newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
                 azDesired == newstr #save digits  in azDesired
@@ -300,7 +308,6 @@ try:
             time.sleep(.01) #slow script down just in case it runs away
             break
 
-        #ser.flush() #flush the serial buffer
         time.sleep(.01)
 
 except KeyboardInterrupt:
