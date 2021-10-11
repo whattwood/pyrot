@@ -4,10 +4,14 @@
 
 ### GLOBAL SETTINGS
 
-# Define connection, "ser2net" for RS-232 Yaesu GS-232A emulation (define ttyS21 in /etc/ser2net.conf) over IP or "hamlib" for Rotctld
-# Software like com2tcp.exe can be used to receive rotator commands from a Windows PC
+# Define connection, "ser2net" for RS-232 Yaesu GS-232A emulation (define ttyS21 in /etc/ser2net.conf) over IP or "hamlib" 
+# for Rotctld Software like com2tcp.exe can be used to receive rotator commands from a Windows PC Define connection, 
+# "ser2net" for RS-232 Yaesu GS-232A emulation (define ttyS21 in /etc/ser2net.conf) over IP or "hamlib" for Rotctld
 comtype = ser2net
 #comtype = hamlib
+
+# Speed of travel: Enter the number of seconds it takes your rotator to travel 180 degrees
+travelspeed = 60.5
 
 
 ### GPIO pin(s) for rotary encoder ###
@@ -15,7 +19,7 @@ comtype = ser2net
 # This pin is used for the azimuth sensor
 enc_az = 26
 
-# This pin will be used for elevation sensor in the future
+# This pin will be ussed for elevation sensor in the future
 enc_el = 24
 
 
