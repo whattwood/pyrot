@@ -37,6 +37,8 @@ relay_cw_on=[int(config.get("pyrotvars","relay_cw"),16),int(config.get("pyrotvar
 relay_cw_off=[int(config.get("pyrotvars","relay_cw"),16),int(config.get("pyrotvars","relay_off"),16)]
 relay_ccw_on=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_on"),16)]
 relay_ccw_off=[int(config.get("pyrotvars","relay_ccw"),16),int(config.get("pyrotvars","relay_off"),16)]
+travelspeed=float(config.get("pyrotvars", "travelspeed"))
+travelspeedperdegree=round(travelspeed/180,4)
 enc_az=int(config.get("pyrotvars", "enc_az"))
 comtype=str(config.get("pyrotvars", "comtype"))
 
@@ -89,8 +91,10 @@ def valueChanged(encoderValue): #This happens when encoder moves
     encoderValue=encoderResult.getValue()
     if azMotion == "cw" and encoderValue == 1:
         azActual += 1 #if encoder pin reads 1 and direction is cw, 1 degree is added to azimuth value.
+        print(bcolors.OKCYAN + "Movement: + 1 degree" + bcolors.ENDC)
     elif azMotion == "ccw" and encoderValue == 1:
         azActual -= 1 #if encoder pin reads 1 and direction is ccw, 1 degree is subtracted from azimuth value.
+        print(bcolors.OKCYAN + "Movement: - 1 degree" + bcolors.ENDC)
     elif azMotion == "stopped" and encoderValue == 1:
         print(bcolors.FAIL + "ERROR! Motion detector while rotator should be stopped!" + bcolors.ENDC)
         with open(filenameLog, 'a') as f:
@@ -108,14 +112,14 @@ def valueChanged(encoderValue): #This happens when encoder moves
 encoderResult = Encoder(enc_az, callback=valueChanged)
 
 def pyrotShutdown(): #Script shutdown commands
+    pi.i2c_write_device(relay_bus,relay_cw_off)
+    pi.i2c_write_device(relay_bus,relay_ccw_off)
+    pi.i2c_close(relay_bus)
     print("Final Azimuth Value:",azActual)
     print("Final Elevation Value:",elActual)
     os.system("screen -S pyrot1 -X quit")
     os.system("screen -S pyrot2 -X quit")
     os.system("kill $(ps aux | grep '/etc/pyrot/ser2net.conf' | awk '{print $2}')")
-    pi.i2c_write_device(relay_bus,relay_cw_off)
-    pi.i2c_write_device(relay_bus,relay_ccw_off)
-    pi.i2c_close(relay_bus)
     print(bcolors.DEFAULT + "Cleaned up running processes")
     filename='/var/spool/pyrot/pyrot_position.txt'
     fileString = (str(azActual) + ", " + str(elActual) + "\n")
@@ -123,7 +127,7 @@ def pyrotShutdown(): #Script shutdown commands
         filetowrite.write(fileString)
     print (bcolors.OKGREEN + "Saved final AZ/EL positions to file " + bcolors.ENDC)
     with open(filenameLog, 'a') as f:
-         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot stopped.\n')
+         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot stopped at AZ/EL: ' + str(azActual) + ', ' + str(elActual) + '\n')
     exit()
 
 
@@ -168,11 +172,11 @@ filenameLog = "/var/spool/pyrot/pyrot_log.txt"
 print ("Does " + filenameLog + " exist? " + str(path.isfile(filenameLog)))
 if path.isfile("filenameLog") is True:
     with open(filenameLog, 'a') as f:
-         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot started.\n')
+         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot started with AZ/EL: ' + str(azActual) + ', ' + str(elActual) + '\n')
 else:
     os.system("touch " + filenameLog)
     with open(filenameLog, 'a') as f:
-         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot started.\n')
+         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ' pyrot started with AZ/EL: ' + str(azActual) + ', ' + str(elActual) + '\n')
 
 count = 0
 azMotion = "stopped"
@@ -204,10 +208,10 @@ try:
                 readTimer = 0
             if readOut != "":
                 print(bcolors.OKBLUE + "RS-232 Received: " + readOut)
-            if "C2" in readOut: #if az el position is requested
+            if "C2" in readOut: #if az el position is requested 
                 ser.write(str("+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
                 print(bcolors.OKCYAN + "RS-232 Sent: " + "+0" + str(azActual).zfill(3) + "+0" + str(elActual).zfill(3))
-            elif "C" in readOut: #if az only position is requested
+            elif "C" in readOut: #if az only position is requested 
                 ser.write(str("+0" + str(azActual).zfill(3) + "\l\n").encode('ascii')) #reply with position, zfill adds leading zeros
                 print(bcolors.OKCYAN + "RS-232 Sent: " + "+0" + str(azActual).zfill(3))
             elif "B" in readOut: #if az only position is requested
@@ -219,11 +223,6 @@ try:
             elif "W" in readOut: #if az/el position command is received
                 newstr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in readOut) #read digits in command string
                 commandedBearing = [int(i) for i in newstr.split()] #save numbers in commandedBearing
-                if len(commandedBearing) > 0 and commandedBearing[0] != None:
-                    azDesired = (commandedBearing[0])
-                if len(commandedBearing) > 1 and commandedBearing[1] != None:
-                    elDesired = (commandedBearing[1])
-                    elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
             elif "S" in readOut: #if all stop command is received
                 commandedBearing = [azActual, elActual] #set commandedBearing to current positions
                 pi.i2c_write_device(relay_bus,relay_cw_off) #turn off relays
@@ -248,6 +247,12 @@ try:
                 with open(filenameLog, 'a') as f:
                     f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " Unknown rotator command received: " + readOut + ".\n")
 
+            if len(commandedBearing) > 0 and commandedBearing[0] != None:
+                azDesired = (commandedBearing[0])
+            if len(commandedBearing) > 1 and commandedBearing[1] != None:
+                elDesired = (commandedBearing[1])
+                elActual = elDesired #ignore elevation commands and set imaginary elevation to commanded elevation
+
             if azDesired > 359: #limit az to predefined stop points
                 azDesired = 359
             elif azDesired < 1:
@@ -262,6 +267,8 @@ try:
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 time.sleep(.3) #pause for a moment so we don't end up going from cw to ccw instantly and blow a fuse
                 pi.i2c_write_device(relay_bus,relay_ccw_on)
+                azMotionStartTime = time.time()
+                azMotionStartPosition = azActual
                 azMotion = "ccw"
                 azStableCount = 0
             elif azDesired < azActual - 1 and azMotion == "ccw":
@@ -270,6 +277,8 @@ try:
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
                 time.sleep(.3) #pause for a moment so we don't end up going from ccw to cw instantly and blow a fuse
                 pi.i2c_write_device(relay_bus,relay_cw_on)
+                azMotionStartTime = time.time()
+                azMotionStartPosition = azActual
                 azMotion = "cw"
                 azStableCount = 0
             elif azDesired > azActual - 1 and azMotion == "cw":
@@ -278,6 +287,15 @@ try:
                 pi.i2c_write_device(relay_bus,relay_cw_off)
                 pi.i2c_write_device(relay_bus,relay_ccw_off)
                 azLastMotion = azMotion
+                azMotionStopTime = time.time()
+                azMotionRunTime = azMotionStopTime - azMotionStartTime
+                if azMotion=="cw":
+                    azMotionExpectedPosition = azMotionStartPosition + int((azMotionRunTime / travelspeedperdegree) + (travelspeedperdegree * .75))
+                elif azMotion=="ccw":
+                    azMotionExpectedPosition = azMotionStartPosition - int((azMotionRunTime / travelspeedperdegree) + (travelspeedperdegree * .75))
+                if azMotionRunTime > .25: #if rotator moved for more than .25 seconds write predicted position to logfile
+                    with open(filenameLog, 'a') as f:
+                        f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " Direction: " + azMotion + ". Predicted AZ position vs. actual was: " + str(azMotionExpectedPosition) +  " vs. " + str(azActual) + " in " + str(azMotionRunTime) + " seconds.\n")
                 azMotion = "stopped"
 
             readOut = ""
@@ -285,7 +303,7 @@ try:
 
             if (count/50).is_integer() is True: #every 5 secods or so
                 os.system('clear') #clear screen
-                print (bcolors.YELLOW + "AZ=",azActual,", desire:",azDesired," EL=",elActual,", desire:",elDesired, " " + bcolors.ENDC)
+                print (bcolors.YELLOW + "AZ=",azActual,", desire:",azDesired," EL=",elActual,", desire:",elDesired, " Rotator speed is: " + str(travelspeedperdegree) + " seconds per degree" + bcolors.ENDC)
             if (count/10).is_integer() is True: #this portion of code saves the rotator position to a file once it's been stopped for 10 seconds or so
                 if azStable != azActual:
                     azStable = azActual
@@ -294,8 +312,15 @@ try:
                     azStableCount +=1
                 if azMotion != "stopped" and azStableCount > 2: #if no motion detected for 3 cycles while rotator should be moving
                     print(bcolors.FAIL + "ERROR! No motion detected while rotator should be turning! Shutting script down." + bcolors.ENDC)
+                    azMotionStopTime = time.time()
+                    azMotionRunTime = azMotionStopTime - azMotionStartTime
+                    if azMotion=="cw":
+                        azMotionExpectedPosition = azMotionStartPosition + int((azMotionRunTime / travelspeedperdegree) + (travelspeedperdegree * .75))
+                    elif azMotion=="ccw":
+                        azMotionExpectedPosition = azMotionStartPosition - int((azMotionRunTime / travelspeedperdegree) + (travelspeedperdegree * .75))
                     with open(filenameLog, 'a') as f:
                         f.write(time.strftime("%Y-%m-%d %H:%M:%S") + " ERROR! No motion detected while rotator should be turning! Shutting script down.\n")
+                        f.write("Direction was " + azMotion + " and expected AZ position was: " + str(azMotionExpectedPosition) + "\n")
                     pyrotShutdown() #shut script down
                 if azStableCount == 10:
                     filename='/var/spool/pyrot/pyrot_position.txt'
