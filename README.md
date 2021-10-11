@@ -40,6 +40,11 @@
 -------------------------------------------------------------------
 ## CHANGELOG
 
+### 2021.10.11
+- added code to predict rotator position based on time spent moving, will help recover after unexpected shutdown due to RF overload on Pi input pin
+- added more position reporting to log file
+- added realtime screen print when 1 degree of motion is detected
+
 ### 2021.06.19
 - changed from Easycom II to GS-232a protocol
 - added ser2net functionality
